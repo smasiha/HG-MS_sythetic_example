@@ -11,7 +11,7 @@ The theorem rates are upper-bound shapes with problem-dependent constants. The t
 | 4 | -0.599 | -0.598 | -0.500 | -0.250 |
 | 10 | -0.158 | -0.156 | -0.200 | -0.100 |
 
-The observed slopes match the finite-range quadrature predictions and are consistent with the sharper problem-specific \(N^{-2/k}\) behavior, improving on the conservative \(N^{-1/k}\) upper bound proved in Lemma F.20.
+The observed slopes match the finite-range quadrature predictions and are consistent with the sharper problem-specific $N^{-2/k}$ behavior, improving on the conservative $N^{-1/k}$ upper bound proved in Lemma F.20.
 
 ## Pseudoinverse, ridge, and CG
 

@@ -3,9 +3,9 @@
 This anonymous, CPU-only artifact studies hyper-gradient optimization when the
 lower-level problem has a known non-singleton minimizer manifold. It directly
 implements true ULA/Gibbs candidate generation, hard optimistic
-best-of-\(N\) selection, and a ridge-CG pseudoinverse approximation. The final
+best-of-$N$ selection, and a ridge-CG pseudoinverse approximation. The final
 comparison gives all five methods 60 single-thread CPU seconds for each of
-five held-out seeds and \(k\in\{1,2,4,10\}\).
+five held-out seeds and $k\in\{1,2,4,10\}$.
 
 - Standalone formulations and result tables:
   [`synthetic_ula_ridge_cg/EXPERIMENT_REPORT.md`](synthetic_ula_ridge_cg/EXPERIMENT_REPORT.md)

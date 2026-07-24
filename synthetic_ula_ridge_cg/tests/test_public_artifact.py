@@ -61,6 +61,32 @@ class PublicArtifactTest(unittest.TestCase):
     def test_frozen_scientific_protocol(self) -> None:
         validate_scientific_configurations(PACKAGE_ROOT)
 
+    def test_reviewer_markdown_uses_github_math_syntax(self) -> None:
+        markdown_paths = (
+            PACKAGE_ROOT / "README.md",
+            PACKAGE_ROOT / "ALGORITHM_AUDIT.md",
+            PACKAGE_ROOT / "EXPERIMENT_REPORT.md",
+            PACKAGE_ROOT / "OPTIMISTIC_HESSIAN_PROOF.md",
+            PACKAGE_ROOT / "RESULTS.md",
+            PACKAGE_ROOT / "results" / "RESULTS.md",
+            PACKAGE_ROOT
+            / "results"
+            / "mechanisms"
+            / "scaling_summary.md",
+        )
+        incompatible_tokens = (
+            r"\(",
+            r"\)",
+            r"\[",
+            r"\]",
+            r"\operatorname",
+        )
+        for path in markdown_paths:
+            text = path.read_text(encoding="utf-8")
+            for token in incompatible_tokens:
+                with self.subTest(path=path.name, token=token):
+                    self.assertNotIn(token, text)
+
 
 if __name__ == "__main__":
     unittest.main()

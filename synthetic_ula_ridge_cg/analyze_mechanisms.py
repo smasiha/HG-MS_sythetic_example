@@ -64,8 +64,8 @@ def build_summary(
             "",
             "The observed slopes match the finite-range quadrature predictions and "
             "are consistent with the sharper problem-specific "
-            r"\(N^{-2/k}\) behavior, improving on the conservative "
-            r"\(N^{-1/k}\) upper bound proved in Lemma F.20.",
+            r"$N^{-2/k}$ behavior, improving on the conservative "
+            r"$N^{-1/k}$ upper bound proved in Lemma F.20.",
         ]
     )
     if ridge is None or ula is None:

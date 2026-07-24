@@ -354,10 +354,7 @@ def theory_diagnostics(
 
 def _format_pair(mean: float, half_width: float, metric: str) -> str:
     if metric == "hyperobjective_gap" and mean < 0.01:
-        return (
-            f"({mean * 1000:.2f} ± {half_width * 1000:.2f})"
-            r"\(\times10^{-3}\)"
-        )
+        return f"({mean * 1000:.2f} ± {half_width * 1000:.2f})×10⁻³"
     if metric == "hyperobjective_gap" and mean < 1.0:
         return f"{mean:.3f} ± {half_width:.3f}"
     if metric == "hyperobjective_gap":
@@ -448,14 +445,14 @@ def render_results_markdown(
             "",
             "The observed slopes match the finite-range quadrature predictions "
             "and are consistent with the sharper problem-specific "
-            r"\(N^{-2/k}\) behavior, improving on the conservative "
-            r"\(N^{-1/k}\) upper bound proved in Lemma F.20.",
+            r"$N^{-2/k}$ behavior, improving on the conservative "
+            r"$N^{-1/k}$ upper bound proved in Lemma F.20.",
             "",
             "## Hyper-gradient Mechanism Checks",
             "",
             "- **Pseudoinverse error** is "
-            r"\(\left|\nabla_\theta f-\nabla_{\theta x}^2g"
-            r"(\nabla_{xx}^2g)^\dagger\nabla_xf-F'(\theta)\right|\) "
+            r"$\left|\nabla_\theta f-\nabla_{\theta x}^2g"
+            r"(\nabla_{xx}^2g)^\dagger\nabla_xf-F'(\theta)\right|$ "
             "at the exact optimistic manifold points. Its maximum is "
             f"`{diagnostics['pseudoinverse_error_max']:.2e}`.",
             "- **Ridge bias** is the absolute difference between the dense "
@@ -464,7 +461,7 @@ def render_results_markdown(
             f"`{diagnostics['ridge_bias_slope']:.3f}` (first-order "
             "prediction: `1`).",
             "- **CG solution error** is "
-            r"\(\|v_{\mathrm{CG}}-v_{\mathrm{dense}}\|_2\) for the same "
+            r"$\|v_{\mathrm{CG}}-v_{\mathrm{dense}}\|_2$ for the same "
             "ridge system at rotated non-optimistic manifold points. Its mean "
             "at absolute tolerance `1e-8` is "
             f"`{diagnostics['cg_solution_error_mean_at_1e-8']:.2e}`.",
