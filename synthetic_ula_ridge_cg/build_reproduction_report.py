@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .analyze_mechanisms import build_summary
 from .configuration import PACKAGE_ROOT
+from .latex_report import write_latex_tables
 from .public_artifact import (
     FINAL_SEEDS,
     K_VALUES,
@@ -22,71 +23,60 @@ from .public_artifact import (
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Combine freshly reproduced fixed-dimension result batches."
+        description="Generate tables from a complete 60-second reproduction."
     )
     parser.add_argument(
-        "--fixed-root",
+        "--reproduction-root",
         type=Path,
-        default=PACKAGE_ROOT / "outputs" / "reproduction" / "fixed_d20",
-    )
-    parser.add_argument(
-        "--k10-root",
-        type=Path,
-        default=PACKAGE_ROOT / "outputs" / "reproduction" / "fixed_d20_k10",
+        default=PACKAGE_ROOT / "outputs" / "reproduction",
     )
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=PACKAGE_ROOT / "outputs" / "reproduction" / "report",
+        default=None,
     )
     args = parser.parse_args()
+    output_directory = (
+        args.output_directory
+        if args.output_directory is not None
+        else args.reproduction_root / "report"
+    )
 
-    runs = discover_public_runs(args.fixed_root / "main")
-    runs.extend(discover_public_runs(args.k10_root / "main"))
+    runs = discover_public_runs(args.reproduction_root / "main")
     keys = [
         (int(run["problem"]["k"]), int(run["seed"]), run["method"])
         for run in runs
     ]
     expected = {
-        (k, seed, method)
-        for k in K_VALUES
+        (k_value, seed, method)
+        for k_value in K_VALUES
         for seed in FINAL_SEEDS
         for method in METHODS
     }
-    duplicate_keys = [
+    duplicates = [
         key for key, count in Counter(keys).items() if count != 1
     ]
-    if len(runs) != 200 or set(keys) != expected or duplicate_keys:
+    if len(runs) != 100 or set(keys) != expected or duplicates:
         raise RuntimeError(
             "reproduction is incomplete: expected one run for every "
             "(k, seed, method) cell"
         )
     for run in runs:
-        final = run["final"]
-        if int(final.get("cg_breakdowns", 0)) != 0:
+        final_record = run["final"]
+        if int(final_record.get("cg_breakdowns", 0)) != 0:
             raise RuntimeError("CG breakdown in reproduced results")
-        if int(final.get("cg_tolerance_failures", 0)) != 0:
+        if int(final_record.get("cg_tolerance_failures", 0)) != 0:
             raise RuntimeError("CG tolerance failure in reproduced results")
 
     final, paired, curves = regenerate_public_summaries(runs)
     per_seed = final_per_seed_records(runs)
-    selection = read_csv(
-        args.fixed_root / "mechanisms" / "selection_error.csv"
-    ) + read_csv(
-        args.k10_root / "mechanisms" / "selection_error.csv"
-    )
-    selection.sort(
-        key=lambda row: (int(row["k"]), int(row["number_candidates"]))
-    )
-    ridge = read_csv(
-        args.fixed_root / "mechanisms" / "ridge_cg_error.csv"
-    )
-    ula = read_csv(
-        args.fixed_root / "mechanisms" / "ula_gibbs_error.csv"
-    )
+    mechanism_directory = args.reproduction_root / "mechanisms"
+    selection = read_csv(mechanism_directory / "selection_error.csv")
+    ridge = read_csv(mechanism_directory / "ridge_cg_error.csv")
+    ula = read_csv(mechanism_directory / "ula_gibbs_error.csv")
 
-    tables = args.output_directory / "tables"
-    mechanisms = args.output_directory / "mechanisms"
+    tables = output_directory / "tables"
+    mechanisms = output_directory / "mechanisms"
     write_csv(tables / "final_per_seed.csv", per_seed)
     write_csv(tables / "final_summary.csv", final)
     write_csv(tables / "paired_comparisons.csv", paired)
@@ -94,7 +84,14 @@ def main() -> None:
     write_csv(mechanisms / "selection_error.csv", selection)
     write_csv(mechanisms / "ridge_cg_error.csv", ridge)
     write_csv(mechanisms / "ula_gibbs_error.csv", ula)
-    (args.output_directory / "RESULTS.md").write_text(
+    write_latex_tables(
+        output_directory / "latex",
+        final,
+        selection,
+        ridge,
+        ula,
+    )
+    (output_directory / "RESULTS.md").write_text(
         render_results_markdown(final, paired, selection, ridge, ula),
         encoding="utf-8",
     )
@@ -103,23 +100,24 @@ def main() -> None:
         encoding="utf-8",
     )
     write_json(
-        args.output_directory / "validation.json",
+        output_directory / "validation.json",
         {
             "complete": True,
             "warnings": [],
             "raw_end_to_end_files": len(runs),
-            "runs_per_method_and_k": 10,
+            "runs_per_method_and_k": len(FINAL_SEEDS),
             "final_summary_rows": len(final),
             "paired_comparison_rows": len(paired),
             "wallclock_curve_rows": len(curves),
             "selection_rows": len(selection),
             "ridge_cg_rows": len(ridge),
             "ula_gibbs_rows": len(ula),
+            "latex_tables": 3,
         },
     )
     print(
         f"[reproduction-report] runs={len(runs)} "
-        f"output={args.output_directory.resolve()}"
+        f"output={output_directory.resolve()}"
     )
 
 

@@ -21,12 +21,12 @@ from .configuration import load_config, read_json, validate_config
 from .methods import METHOD_LABELS
 
 
-PACKAGE_VERSION = "1.0.0"
+PACKAGE_VERSION = "2.0.0"
 BOOTSTRAP_SEED = 82_731
 BOOTSTRAP_REPETITIONS = 5_000
 K_VALUES = (1, 2, 4, 10)
-BASE_K_VALUES = (1, 2, 4)
-FINAL_SEEDS = tuple(range(1000, 1010))
+FINAL_SEEDS = tuple(range(1000, 1005))
+FINAL_BUDGET_SECONDS = 60.0
 PILOT_SEEDS = (11, 28, 47)
 METHODS = ("hg_ms", "hg_baseline", "v_pbgd", "g_pbgd", "iaptt_gm")
 DISPLAY_METRICS = (
@@ -151,18 +151,13 @@ def _batch_summaries(
 def regenerate_public_summaries(
     runs: Sequence[Dict[str, Any]],
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
-    outputs: List[List[Dict[str, Any]]] = [[], [], []]
-    for k_values in (BASE_K_VALUES, (10,)):
-        batch = [run for run in runs if int(run["problem"]["k"]) in k_values]
-        batch.sort(key=lambda run: run["_path"])
-        generated = _batch_summaries(batch)
-        for destination, records in zip(outputs, generated):
-            destination.extend(records)
-    outputs[0].sort(key=lambda record: (int(record["k"]), record["method"]))
-    outputs[1].sort(
+    ordered_runs = sorted(runs, key=lambda run: run["_path"])
+    final, paired, curves = _batch_summaries(ordered_runs)
+    final.sort(key=lambda record: (int(record["k"]), record["method"]))
+    paired.sort(
         key=lambda record: (int(record["k"]), record["baseline"])
     )
-    outputs[2].sort(
+    curves.sort(
         key=lambda record: (
             int(record["k"]),
             record["method"],
@@ -170,7 +165,7 @@ def regenerate_public_summaries(
             float(record["elapsed_seconds"]),
         )
     )
-    return outputs[0], outputs[1], outputs[2]
+    return final, paired, curves
 
 
 def final_per_seed_records(
@@ -386,10 +381,11 @@ def render_results_markdown(
     lines = [
         "# Controlled ULA/Gibbs and Ridge-CG Results",
         "",
-        "All end-to-end entries use ten held-out seeds and report mean ± "
-        "symmetric bootstrap 95% CI half-width (5,000 resamples). Every cell "
-        "contains objective gap / stationarity / optimistic-solution distance; "
-        "lower is better.",
+        "All end-to-end entries use 60 single-thread CPU seconds and five "
+        "held-out seeds (`1000`--`1004`). Values are mean ± symmetric "
+        "bootstrap 95% CI half-width (5,000 resamples). Every cell contains "
+        "objective gap / stationarity / optimistic-solution distance; lower "
+        "is better.",
         "",
         "| Method | k=1 | k=2 | k=4 | k=10 |",
         "|---|---:|---:|---:|---:|",
@@ -497,53 +493,42 @@ def render_results_markdown(
 
 def validate_scientific_configurations(package_root: Path) -> None:
     default_path = package_root / "config" / "default_config.json"
-    k10_path = package_root / "config" / "k10_config.json"
     pilot_path = package_root / "config" / "pilot_grid.json"
     default = read_json(default_path)
-    k10 = read_json(k10_path)
     pilot = read_json(pilot_path)
     validate_config(default)
-    validate_config(k10)
 
-    if tuple(default["experiment"]["k_values"]) != BASE_K_VALUES:
-        raise AssertionError("default configuration must contain k={1,2,4}")
-    if tuple(k10["experiment"]["k_values"]) != (10,):
-        raise AssertionError("isolated k=10 configuration is malformed")
-    for config in (default, k10):
-        problem = config["problem"]
-        if int(problem["ambient_dimension"]) != 20:
-            raise AssertionError("ambient dimension must be 20")
-        if float(problem["theta_bound"]) != 3.0:
-            raise AssertionError("theta domain must be [-3,3]")
-        if tuple(config["experiment"]["seeds"]) != FINAL_SEEDS:
-            raise AssertionError("final seeds must be 1000--1009")
-        if float(config["experiment"]["budget_seconds"]) != 2.0:
-            raise AssertionError("end-to-end budget must be two seconds")
-        if tuple(config["experiment"]["methods"]) != METHODS:
-            raise AssertionError("method set changed")
-        common = config["common"]
-        if (
-            common["initialization"] != "scaled_gaussian_sphere"
-            or float(common["initialization_center_radius"]) != 2.0
-            or float(common["initialization_temperature"]) != 1e-3
-            or float(common["initialization_variance_scale"]) != 1.0
-        ):
-            raise AssertionError("analyzed lambda-scaled warm start changed")
-        hg_ms = config["hg_ms"]
-        if (
-            int(hg_ms["branches"]) != 16
-            or int(hg_ms["ula_steps"]) != 100
-            or float(hg_ms["ula_step_size"]) != 0.01
-            or float(hg_ms["temperature"]) != 1e-3
-            or float(hg_ms["ridge"]) != 0.3
-            or float(hg_ms["cg_absolute_tolerance"]) != 1e-8
-        ):
-            raise AssertionError("HG-MS scientific configuration changed")
-    for key in ("problem", "common", *METHODS):
-        if default[key] != k10[key]:
-            raise AssertionError(
-                f"k=10 must use the same untuned {key} configuration"
-            )
+    problem = default["problem"]
+    if int(problem["ambient_dimension"]) != 20:
+        raise AssertionError("ambient dimension must be 20")
+    if float(problem["theta_bound"]) != 3.0:
+        raise AssertionError("theta domain must be [-3,3]")
+    if (
+        tuple(default["experiment"]["k_values"]) != K_VALUES
+        or tuple(default["experiment"]["seeds"]) != FINAL_SEEDS
+        or tuple(default["experiment"]["methods"]) != METHODS
+        or float(default["experiment"]["budget_seconds"])
+        != FINAL_BUDGET_SECONDS
+    ):
+        raise AssertionError("final 60-second protocol changed")
+    common = default["common"]
+    if (
+        common["initialization"] != "scaled_gaussian_sphere"
+        or float(common["initialization_center_radius"]) != 2.0
+        or float(common["initialization_temperature"]) != 1e-3
+        or float(common["initialization_variance_scale"]) != 1.0
+    ):
+        raise AssertionError("analyzed lambda-scaled warm start changed")
+    hg_ms = default["hg_ms"]
+    if (
+        int(hg_ms["branches"]) != 16
+        or int(hg_ms["ula_steps"]) != 100
+        or float(hg_ms["ula_step_size"]) != 0.01
+        or float(hg_ms["temperature"]) != 1e-3
+        or float(hg_ms["ridge"]) != 0.3
+        or float(hg_ms["cg_absolute_tolerance"]) != 1e-8
+    ):
+        raise AssertionError("HG-MS scientific configuration changed")
     if (
         tuple(pilot["pilot_seeds"]) != PILOT_SEEDS
         or float(pilot["pilot_budget_seconds"]) != 2.0
@@ -566,6 +551,7 @@ def scan_text_for_identifiers(paths: Iterable[Path]) -> None:
             ".sh",
             ".sbatch",
             ".txt",
+            ".tex",
             ".yml",
             ".yaml",
         }:
@@ -617,8 +603,7 @@ def build_manifest(
         "package_version": PACKAGE_VERSION,
         "manifest_schema_version": 1,
         "configurations": {
-            "fixed_d20": "config/default_config.json",
-            "fixed_d20_k10": "config/k10_config.json",
+            "final_60s": "config/default_config.json",
             "pilot_grid": "config/pilot_grid.json",
             "frozen_selected_config": "results/pilot/selected_config.json",
         },
@@ -697,7 +682,7 @@ def validate_public_results(
         (int(run["problem"]["k"]), int(run["seed"]), run["method"])
         for run in runs
     ]
-    if len(runs) != 200 or set(observed_keys) != expected_keys:
+    if len(runs) != 100 or set(observed_keys) != expected_keys:
         raise AssertionError("public raw runs are incomplete")
     duplicates = [
         key for key, count in Counter(observed_keys).items() if count != 1
@@ -705,31 +690,21 @@ def validate_public_results(
     if duplicates:
         raise AssertionError(f"duplicate public runs: {duplicates}")
 
-    loaded_configs = {
-        **{
-            k: load_config(
-                package_root / "config" / "default_config.json",
-                selected_path,
-            )
-            for k in BASE_K_VALUES
-        },
-        10: load_config(
-            package_root / "config" / "k10_config.json",
-            selected_path,
-        ),
-    }
+    config = load_config(
+        package_root / "config" / "default_config.json",
+        selected_path,
+    )
     for run in runs:
         if ENVIRONMENT_KEYS.intersection(
             key.lower() for key in run
         ):
             raise AssertionError("environment fields remain in public run")
         k = int(run["problem"]["k"])
-        config = loaded_configs[k]
         if (
             int(run["problem"]["ambient_dimension"]) != 20
             or run["common_config"] != config["common"]
             or run["method_config"] != config[run["method"]]
-            or float(run["budget_seconds"]) != 2.0
+            or float(run["budget_seconds"]) != FINAL_BUDGET_SECONDS
         ):
             raise AssertionError(
                 f"configuration mismatch for k={k}, seed={run['seed']}, "
@@ -744,12 +719,11 @@ def validate_public_results(
         if float(run["budget_overrun_seconds"]) > allowed_overrun:
             raise AssertionError("unacceptable wall-clock overrun found")
 
-    for name in ("fixed_d20", "fixed_d20_k10"):
-        report = read_json(
-            results_directory / "validation" / f"{name}.json"
-        )
-        if not report["complete"] or report["warnings"]:
-            raise AssertionError(f"incomplete source validation: {name}")
+    source_report = read_json(
+        results_directory / "validation" / "source_validation.json"
+    )
+    if not source_report["complete"] or source_report["warnings"]:
+        raise AssertionError("incomplete final source validation")
 
     final, paired, curves = regenerate_public_summaries(runs)
     assert_records_match(
@@ -800,6 +774,30 @@ def validate_public_results(
         if round(slopes["quadrature"], 3) != expected_quadrature[k]:
             raise AssertionError(f"quadrature slope mismatch for k={k}")
 
+    from .latex_report import (
+        render_end_to_end_table,
+        render_mechanism_table,
+        render_selection_table,
+    )
+
+    expected_latex = {
+        "end_to_end_table.tex": render_end_to_end_table(final),
+        "selection_scaling_table.tex": render_selection_table(selection),
+        "mechanism_diagnostics_table.tex": render_mechanism_table(
+            selection,
+            ridge,
+            ula,
+        ),
+    }
+    for filename, expected_text in expected_latex.items():
+        actual_text = (
+            results_directory / "latex" / filename
+        ).read_text(encoding="utf-8")
+        if actual_text != expected_text:
+            raise AssertionError(f"generated LaTeX is stale: {filename}")
+    if not (package_root / "EXPERIMENT_REPORT.tex").is_file():
+        raise AssertionError("missing reviewer-facing LaTeX report")
+
     final_index = {
         (int(row["k"]), row["method"]): row for row in final
     }
@@ -817,12 +815,12 @@ def validate_public_results(
             lowest_cells += 1
     k10 = final_index[(10, "hg_ms")]
     approximate = {
-        "hyperobjective_gap_mean": 0.007957,
-        "hyperobjective_gap_ci95_half_width": 0.00281,
-        "exact_hypergradient_abs_mean": 0.1673,
-        "exact_hypergradient_abs_ci95_half_width": 0.0359,
-        "optimistic_distance_mean": 1.103,
-        "optimistic_distance_ci95_half_width": 0.0947,
+        "hyperobjective_gap_mean": 0.0105767,
+        "hyperobjective_gap_ci95_half_width": 0.0042978,
+        "exact_hypergradient_abs_mean": 0.198776,
+        "exact_hypergradient_abs_ci95_half_width": 0.0370511,
+        "optimistic_distance_mean": 1.08257,
+        "optimistic_distance_ci95_half_width": 0.143662,
     }
     for key, target in approximate.items():
         if not math.isclose(
@@ -886,7 +884,7 @@ def validate_public_results(
         "checks": {
             "raw_end_to_end_files": len(runs),
             "unique_method_dimension_seed_cells": len(set(observed_keys)),
-            "runs_per_method_and_k": 10,
+            "runs_per_method_and_k": len(FINAL_SEEDS),
             "cg_breakdowns": 0,
             "cg_tolerance_failures": 0,
             "unacceptable_wall_clock_overruns": 0,
@@ -897,6 +895,7 @@ def validate_public_results(
             "selection_rows": len(selection),
             "ridge_cg_rows": len(ridge),
             "ula_gibbs_rows": len(ula),
+            "generated_latex_tables": len(expected_latex),
             "hg_ms_lowest_mean_cells": lowest_cells,
         },
         "selection_slopes": {

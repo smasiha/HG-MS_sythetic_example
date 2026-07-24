@@ -149,25 +149,39 @@ class SyntheticProblemTest(unittest.TestCase):
             self.assertGreaterEqual(local_minima.size, 4)
 
     def test_optimistic_point_has_positive_intrinsic_curvature(self) -> None:
-        radius = self.problem.radius(self.theta)
         step = 1e-4
+        for theta in (-3.0, -1.0, 0.0, self.theta, 3.0):
+            with self.subTest(theta=theta):
+                radius = self.problem.radius(theta)
 
-        def manifold_curve(angle: float) -> np.ndarray:
-            return radius * (
-                -np.cos(angle) * self.problem.direction(self.theta)
-                + np.sin(angle) * self.problem.direction_prime(self.theta)
-            )
+                def unit_speed_geodesic(distance: float) -> np.ndarray:
+                    angle = distance / radius
+                    return radius * (
+                        -np.cos(angle) * self.problem.direction(theta)
+                        + np.sin(angle)
+                        * self.problem.direction_prime(theta)
+                    )
 
-        intrinsic_second_derivative = (
-            self.problem.f(self.theta, manifold_curve(step))
-            - 2.0 * self.problem.f(self.theta, manifold_curve(0.0))
-            + self.problem.f(self.theta, manifold_curve(-step))
-        ) / (step * step)
-        self.assertAlmostEqual(
-            float(intrinsic_second_derivative),
-            1.0 + self.problem.landscape_coupling * self.theta,
-            places=6,
-        )
+                intrinsic_eigenvalue = (
+                    self.problem.f(theta, unit_speed_geodesic(step))
+                    - 2.0 * self.problem.f(
+                        theta,
+                        unit_speed_geodesic(0.0),
+                    )
+                    + self.problem.f(
+                        theta,
+                        unit_speed_geodesic(-step),
+                    )
+                ) / (step * step)
+                expected = (
+                    1.0 + self.problem.landscape_coupling * theta
+                ) / (1.0 + theta * theta)
+                self.assertAlmostEqual(
+                    float(intrinsic_eigenvalue),
+                    expected,
+                    places=6,
+                )
+                self.assertGreaterEqual(expected, 0.01 - 1e-15)
 
     def test_selection_quadrature_has_correct_single_sample_moment(self) -> None:
         references = selection_quadrature_reference(

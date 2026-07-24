@@ -36,10 +36,12 @@ F'(\theta)&=2\theta/\sqrt{0.1^2+1+\theta^2}.
 \end{aligned}
 \]
 
-Thus \(\theta^\star=0\), \(F^\star=2\sqrt{1.01}\), and the tangent
-Riemannian Hessian at \(x^\star(\theta)\) has eigenvalue
-\(1+0.3\theta\ge0.1\). In the lower Hessian there are exactly \(k\) tangent
-zero modes, one positive radial mode, and \(d-k-1\) positive
+Thus \(\theta^\star=0\), \(F^\star=2\sqrt{1.01}\), and, under the
+ambient-induced metric, the tangent Riemannian Hessian at
+\(x^\star(\theta)\) has eigenvalue
+\((1+0.3\theta)/(1+\theta^2)\ge0.01\). The geodesic proof is in
+`OPTIMISTIC_HESSIAN_PROOF.tex`. In the lower Hessian there are exactly \(k\)
+tangent zero modes, one positive radial mode, and \(d-k-1\) positive
 embedding-normal modes.
 
 ## Shared Initialization and Timing
@@ -58,7 +60,7 @@ X_i^0\sim\mathcal N((2v_i,0),\lambda I_{20}),
 \]
 
 The timer starts before this lower initialization. Each end-to-end method then
-receives exactly two single-thread wall-clock seconds. The process-level
+receives exactly 60 single-thread wall-clock seconds. The process-level
 method order is deterministically permuted for each \((k,\text{seed})\).
 
 ## HG-MS and HG-Baseline
@@ -172,9 +174,9 @@ projection only on \(\theta\).
 Every candidate receives two seconds on seeds `{11, 28, 47}`. Selection uses
 only the geometric mean validation objective gap (equivalently, mean
 log-objective-gap score). Final evaluation uses the disjoint held-out seeds
-`1000`--`1009`. The isolated `config/k10_config.json` changes only the value
-of \(k\) and reuses the previously frozen selected configuration without
-retuning.
+`1000`--`1004`. The final configuration includes all four manifold dimensions;
+in particular, \(k=10\) reuses the previously frozen selected configuration
+without retuning.
 
 ## Mechanism Definitions
 

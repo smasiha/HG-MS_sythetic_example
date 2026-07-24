@@ -388,7 +388,7 @@ def write_paired_markdown(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Aggregate ten-seed fixed-wall-clock synthetic results."
+        description="Aggregate five-seed fixed-wall-clock synthetic results."
     )
     parser.add_argument(
         "--config",

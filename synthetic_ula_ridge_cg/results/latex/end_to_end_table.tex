@@ -1,0 +1,18 @@
+\begin{table*}[t]
+  \centering
+  \caption{\textbf{Fixed-wall-clock synthetic comparison.} Each method receives 60 single-thread CPU seconds for each of five held-out seeds. Entries are mean $\pm$ symmetric bootstrap 95\% CI half-width (5,000 resamples): objective gap / stationarity / optimistic-solution distance. Lower is better.}
+  \label{tab:synthetic-end-to-end}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lcccc}
+    \toprule
+    Method & $k=1$ & $k=2$ & $k=4$ & $k=10$ \\
+    \midrule
+    \textbf{HG-MS} & \textbf{$(2.95\mathbin{\pm}2.88)\!\times\!10^{-3}$ / $0.078\mathbin{\pm}0.064$ / $0.254\mathbin{\pm}0.173$} & \textbf{$(0.94\mathbin{\pm}0.93)\!\times\!10^{-3}$ / $0.046\mathbin{\pm}0.033$ / $0.728\mathbin{\pm}0.203$} & \textbf{$(2.92\mathbin{\pm}2.55)\!\times\!10^{-3}$ / $0.089\mathbin{\pm}0.052$ / $0.869\mathbin{\pm}0.167$} & \textbf{$0.011\mathbin{\pm}0.004$ / $0.199\mathbin{\pm}0.037$ / $1.083\mathbin{\pm}0.144$} \\
+    HG-baseline & $0.056\mathbin{\pm}0.050$ / $0.369\mathbin{\pm}0.234$ / $1.282\mathbin{\pm}0.620$ & $0.047\mathbin{\pm}0.026$ / $0.408\mathbin{\pm}0.094$ / $1.557\mathbin{\pm}0.354$ & $0.052\mathbin{\pm}0.024$ / $0.429\mathbin{\pm}0.103$ / $1.654\mathbin{\pm}0.243$ & $0.025\mathbin{\pm}0.008$ / $0.305\mathbin{\pm}0.050$ / $1.205\mathbin{\pm}0.167$ \\
+    V-PBGD & $0.152\mathbin{\pm}0.072$ / $0.703\mathbin{\pm}0.164$ / $1.828\mathbin{\pm}0.316$ & $0.116\mathbin{\pm}0.056$ / $0.622\mathbin{\pm}0.126$ / $1.670\mathbin{\pm}0.238$ & $0.096\mathbin{\pm}0.031$ / $0.584\mathbin{\pm}0.088$ / $1.591\mathbin{\pm}0.160$ & $0.096\mathbin{\pm}0.031$ / $0.584\mathbin{\pm}0.088$ / $1.591\mathbin{\pm}0.160$ \\
+    G-PBGD & $1.76\mathbin{\pm}1.71$ / $1.019\mathbin{\pm}0.615$ / $2.286\mathbin{\pm}0.660$ & $1.75\mathbin{\pm}1.72$ / $0.959\mathbin{\pm}0.644$ / $2.159\mathbin{\pm}0.721$ & $1.75\mathbin{\pm}1.72$ / $0.959\mathbin{\pm}0.644$ / $2.159\mathbin{\pm}0.721$ & $1.75\mathbin{\pm}1.72$ / $0.959\mathbin{\pm}0.644$ / $2.176\mathbin{\pm}0.704$ \\
+    IAPTT-GM & $1.73\mathbin{\pm}1.73$ / $0.837\mathbin{\pm}0.706$ / $1.463\mathbin{\pm}1.136$ & $1.73\mathbin{\pm}1.73$ / $0.837\mathbin{\pm}0.706$ / $1.340\mathbin{\pm}1.011$ & $1.73\mathbin{\pm}1.73$ / $0.837\mathbin{\pm}0.706$ / $1.461\mathbin{\pm}1.135$ & $2.59\mathbin{\pm}1.73$ / $1.190\mathbin{\pm}0.706$ / $1.962\mathbin{\pm}1.132$ \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}

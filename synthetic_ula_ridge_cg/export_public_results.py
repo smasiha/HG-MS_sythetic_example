@@ -4,12 +4,14 @@ import argparse
 import shutil
 from collections import Counter
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from .analyze_mechanisms import build_summary
 from .configuration import PACKAGE_ROOT, read_json
+from .latex_report import write_latex_tables
 from .public_artifact import (
     K_VALUES,
+    METHODS,
     assert_records_match,
     assert_sanitization_is_lossless,
     build_manifest,
@@ -34,18 +36,18 @@ def _copy_sanitized_json(
     sanitized = sanitize_json(original, removed_fields)
     assert_sanitization_is_lossless(original, sanitized)
     write_json(destination, sanitized)
-    reloaded = read_json(destination)
-    assert_sanitization_is_lossless(original, reloaded)
+    assert_sanitization_is_lossless(original, read_json(destination))
 
 
-def _source_summary_records(
-    fixed_d20: Path,
-    fixed_d20_k10: Path,
-    filename: str,
-) -> List[Dict[str, str]]:
-    records = []
-    for root in (fixed_d20, fixed_d20_k10):
-        records.extend(read_csv(root / "summary" / filename))
+def _validate_source_report(source_root: Path) -> Dict[str, Any]:
+    report = read_json(source_root / "summary" / "validation.json")
+    if not report.get("complete") or report.get("warnings"):
+        raise RuntimeError("final 60-second source validation is incomplete")
+    return report
+
+
+def _read_source_summary(source_root: Path, filename: str):
+    records = read_csv(source_root / "summary" / filename)
     if filename == "final_summary.csv":
         records.sort(key=lambda row: (int(row["k"]), row["method"]))
     elif filename == "paired_comparisons.csv":
@@ -62,101 +64,80 @@ def _source_summary_records(
     return records
 
 
-def _validate_source_report(root: Path, label: str) -> Dict[str, Any]:
-    report = read_json(root / "summary" / "validation.json")
-    if not report.get("complete") or report.get("warnings"):
-        raise RuntimeError(f"source validation is incomplete for {label}")
-    return report
-
-
 def export_results(
-    fixed_d20: Path,
-    fixed_d20_k10: Path,
+    final_source: Path,
+    pilot_source: Path,
+    mechanism_source: Path,
+    k10_selection_source: Path,
     output_directory: Path,
 ) -> None:
-    for root, label in (
-        (fixed_d20, "fixed_d20"),
-        (fixed_d20_k10, "fixed_d20_k10"),
-    ):
-        if not root.is_dir():
-            raise FileNotFoundError(f"missing source output tree: {root}")
-        _validate_source_report(root, label)
-    if output_directory.resolve() in {
-        fixed_d20.resolve(),
-        fixed_d20_k10.resolve(),
-    }:
-        raise ValueError("public output directory must differ from source outputs")
+    required_directories = {
+        "final source": final_source,
+        "pilot source": pilot_source,
+        "mechanism source": mechanism_source,
+        "k=10 selection source": k10_selection_source,
+    }
+    for label, path in required_directories.items():
+        if not path.is_dir():
+            raise FileNotFoundError(f"missing {label}: {path}")
+    _validate_source_report(final_source)
+    if output_directory.resolve() == final_source.resolve():
+        raise ValueError("public output directory must differ from source")
+
+    source_run_paths = sorted(
+        (final_source / "main").glob("k_*/seed_*/*.json")
+    )
+    if len(source_run_paths) != 100:
+        raise AssertionError(
+            f"expected 100 final source files, found {len(source_run_paths)}"
+        )
 
     if output_directory.exists():
         shutil.rmtree(output_directory)
     output_directory.mkdir(parents=True)
     removed_fields: Counter[str] = Counter()
 
-    source_run_paths = sorted(
-        (fixed_d20 / "main").glob("k_*/seed_*/*.json")
-    ) + sorted(
-        (fixed_d20_k10 / "main").glob("k_*/seed_*/*.json")
-    )
-    if len(source_run_paths) != 200:
-        raise AssertionError(
-            f"expected 200 source end-to-end files, found "
-            f"{len(source_run_paths)}"
-        )
     for source in source_run_paths:
-        k = int(source.parents[1].name.removeprefix("k_"))
+        k_value = int(source.parents[1].name.removeprefix("k_"))
         seed = int(source.parent.name.removeprefix("seed_"))
         destination = (
             output_directory
             / "raw"
-            / f"k_{k}"
+            / f"k_{k_value}"
             / f"seed_{seed}"
             / source.name
         )
         _copy_sanitized_json(source, destination, removed_fields)
 
-    pilot_source = fixed_d20 / "pilot"
     _copy_sanitized_json(
         pilot_source / "selected_config.json",
         output_directory / "pilot" / "selected_config.json",
         removed_fields,
     )
-    for method in (
-        "hg_ms",
-        "hg_baseline",
-        "v_pbgd",
-        "g_pbgd",
-        "iaptt_gm",
-    ):
+    for method in METHODS:
         _copy_sanitized_json(
             pilot_source / method / "summary.json",
             output_directory / "pilot" / f"{method}_summary.json",
             removed_fields,
         )
+    _copy_sanitized_json(
+        final_source / "summary" / "validation.json",
+        output_directory / "validation" / "source_validation.json",
+        removed_fields,
+    )
 
-    for root, label in (
-        (fixed_d20, "fixed_d20"),
-        (fixed_d20_k10, "fixed_d20_k10"),
-    ):
-        _copy_sanitized_json(
-            root / "summary" / "validation.json",
-            output_directory / "validation" / f"{label}.json",
-            removed_fields,
+    selection = read_csv(mechanism_source / "selection_error.csv")
+    if k10_selection_source.resolve() != mechanism_source.resolve():
+        selection.extend(
+            read_csv(k10_selection_source / "selection_error.csv")
         )
-
-    fixed_selection = read_csv(
-        fixed_d20 / "mechanisms" / "selection_error.csv"
-    )
-    k10_selection = read_csv(
-        fixed_d20_k10 / "mechanisms" / "selection_error.csv"
-    )
-    selection = fixed_selection + k10_selection
     selection.sort(
         key=lambda row: (int(row["k"]), int(row["number_candidates"]))
     )
     if {int(row["k"]) for row in selection} != set(K_VALUES):
         raise AssertionError("selection diagnostics do not cover all k values")
-    ridge = read_csv(fixed_d20 / "mechanisms" / "ridge_cg_error.csv")
-    ula = read_csv(fixed_d20 / "mechanisms" / "ula_gibbs_error.csv")
+    ridge = read_csv(mechanism_source / "ridge_cg_error.csv")
+    ula = read_csv(mechanism_source / "ula_gibbs_error.csv")
     write_csv(
         output_directory / "mechanisms" / "selection_error.csv",
         selection,
@@ -170,49 +151,39 @@ def export_results(
         ula,
     )
     _copy_sanitized_json(
-        fixed_d20 / "mechanisms" / "metadata.json",
+        mechanism_source / "metadata.json",
         output_directory / "mechanisms" / "metadata_fixed_d20.json",
         removed_fields,
     )
-    _copy_sanitized_json(
-        fixed_d20_k10 / "mechanisms" / "selection_metadata.json",
-        output_directory / "mechanisms" / "metadata_k10_selection.json",
-        removed_fields,
-    )
+    k10_metadata = k10_selection_source / "selection_metadata.json"
+    if k10_metadata.is_file():
+        _copy_sanitized_json(
+            k10_metadata,
+            output_directory / "mechanisms" / "metadata_k10_selection.json",
+            removed_fields,
+        )
 
     runs = discover_public_runs(output_directory / "raw")
     final, paired, curves = regenerate_public_summaries(runs)
     assert_records_match(
         final,
-        _source_summary_records(
-            fixed_d20,
-            fixed_d20_k10,
-            "final_summary.csv",
-        ),
+        _read_source_summary(final_source, "final_summary.csv"),
         "source versus sanitized final summary",
     )
     assert_records_match(
         paired,
-        _source_summary_records(
-            fixed_d20,
-            fixed_d20_k10,
-            "paired_comparisons.csv",
-        ),
+        _read_source_summary(final_source, "paired_comparisons.csv"),
         "source versus sanitized paired comparisons",
     )
     assert_records_match(
         curves,
-        _source_summary_records(
-            fixed_d20,
-            fixed_d20_k10,
-            "wallclock_curves.csv",
-        ),
+        _read_source_summary(final_source, "wallclock_curves.csv"),
         "source versus sanitized wall-clock curves",
     )
-    per_seed = final_per_seed_records(runs)
+
     write_csv(
         output_directory / "tables" / "final_per_seed.csv",
-        per_seed,
+        final_per_seed_records(runs),
     )
     write_csv(
         output_directory / "tables" / "final_summary.csv",
@@ -226,15 +197,16 @@ def export_results(
         output_directory / "tables" / "wallclock_curves.csv",
         curves,
     )
-    results_markdown = render_results_markdown(
+    write_latex_tables(
+        output_directory / "latex",
         final,
-        paired,
         selection,
         ridge,
         ula,
     )
+
     (output_directory / "RESULTS.md").write_text(
-        results_markdown,
+        render_results_markdown(final, paired, selection, ridge, ula),
         encoding="utf-8",
     )
     if output_directory.resolve() == (PACKAGE_ROOT / "results").resolve():
@@ -265,38 +237,49 @@ def export_results(
         report,
     )
     counts = dict(report["checks"])
-    counts["pilot_summary_files"] = 5
-    manifest = build_manifest(
-        PACKAGE_ROOT,
-        output_directory,
-        removed_fields,
-        counts,
+    counts["pilot_summary_files"] = len(METHODS)
+    write_json(
+        output_directory / "MANIFEST.json",
+        build_manifest(
+            PACKAGE_ROOT,
+            output_directory,
+            removed_fields,
+            counts,
+        ),
     )
-    write_json(output_directory / "MANIFEST.json", manifest)
     validate_public_results(PACKAGE_ROOT, output_directory)
     print(
-        f"[export] wrote anonymous public artifact to "
+        f"[export] wrote {len(runs)} anonymous 60-second runs to "
         f"{output_directory.resolve()}"
-    )
-    print(
-        f"[export] raw_runs={len(runs)} "
-        f"removed_environment_fields={sum(removed_fields.values())}"
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Export and verify anonymous public synthetic results."
+        description="Export and verify the anonymous 60-second artifact."
     )
     parser.add_argument(
-        "--source-fixed-d20",
+        "--source-final",
         type=Path,
-        default=PACKAGE_ROOT / "outputs" / "fixed_d20",
+        default=PACKAGE_ROOT / "outputs" / "long60s_5seed",
     )
     parser.add_argument(
-        "--source-k10",
+        "--source-pilot",
         type=Path,
-        default=PACKAGE_ROOT / "outputs" / "fixed_d20_k10",
+        default=PACKAGE_ROOT / "outputs" / "fixed_d20" / "pilot",
+    )
+    parser.add_argument(
+        "--source-mechanisms",
+        type=Path,
+        default=PACKAGE_ROOT / "outputs" / "fixed_d20" / "mechanisms",
+    )
+    parser.add_argument(
+        "--source-k10-selection",
+        type=Path,
+        default=PACKAGE_ROOT
+        / "outputs"
+        / "fixed_d20_k10"
+        / "mechanisms",
     )
     parser.add_argument(
         "--output-directory",
@@ -305,8 +288,10 @@ def main() -> None:
     )
     args = parser.parse_args()
     export_results(
-        args.source_fixed_d20,
-        args.source_k10,
+        args.source_final,
+        args.source_pilot,
+        args.source_mechanisms,
+        args.source_k10_selection,
         args.output_directory,
     )
 

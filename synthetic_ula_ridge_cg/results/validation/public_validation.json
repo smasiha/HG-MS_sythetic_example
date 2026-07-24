@@ -2,21 +2,22 @@
   "checks": {
     "cg_breakdowns": 0,
     "cg_tolerance_failures": 0,
-    "final_per_seed_rows": 200,
+    "final_per_seed_rows": 100,
     "final_summary_rows": 20,
+    "generated_latex_tables": 3,
     "hg_ms_lowest_mean_cells": 12,
     "paired_comparison_rows": 16,
-    "raw_end_to_end_files": 200,
+    "raw_end_to_end_files": 100,
     "ridge_cg_rows": 120,
-    "runs_per_method_and_k": 10,
+    "runs_per_method_and_k": 5,
     "selection_rows": 48,
     "ula_gibbs_rows": 24,
     "unacceptable_wall_clock_overruns": 0,
-    "unique_method_dimension_seed_cells": 200,
+    "unique_method_dimension_seed_cells": 100,
     "wallclock_curve_rows": 7260
   },
   "complete": true,
-  "package_version": "1.0.0",
+  "package_version": "2.0.0",
   "selection_slopes": {
     "1": {
       "observed": -2.0161218457272274,

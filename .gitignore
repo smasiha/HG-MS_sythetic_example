@@ -7,6 +7,11 @@ __pycache__/
 *.out
 *.err
 *.log
+*.aux
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+synthetic_ula_ridge_cg/EXPERIMENT_REPORT.pdf
 .DS_Store
 
 synthetic_ula_ridge_cg/outputs/

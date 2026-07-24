@@ -8,11 +8,10 @@ cd "$REPOSITORY_ROOT"
 
 PYTHON="${PYTHON:-python}"
 JOBS="${JOBS:-1}"
-RERUN_PILOT="${RERUN_PILOT:-1}"
-OUTPUT_BASE="${OUTPUT_BASE:-synthetic_ula_ridge_cg/outputs/reproduction}"
-FIXED_ROOT="$OUTPUT_BASE/fixed_d20"
-K10_ROOT="$OUTPUT_BASE/fixed_d20_k10"
-SELECTED_CONFIG="$FIXED_ROOT/pilot/selected_config.json"
+RERUN_PILOT="${RERUN_PILOT:-0}"
+OUTPUT_ROOT="${OUTPUT_ROOT:-synthetic_ula_ridge_cg/outputs/reproduction}"
+CONFIG="synthetic_ula_ridge_cg/config/default_config.json"
+SELECTED_CONFIG="$OUTPUT_ROOT/pilot/selected_config.json"
 
 if ! [[ "$JOBS" =~ ^[1-9][0-9]*$ ]]; then
   echo "JOBS must be a positive integer" >&2
@@ -29,66 +28,66 @@ export MKL_NUM_THREADS=1
 export NUMEXPR_NUM_THREADS=1
 export VECLIB_MAXIMUM_THREADS=1
 export PYTHONHASHSEED=0
+export CUDA_VISIBLE_DEVICES=""
 
 "$PYTHON" -m unittest discover -s synthetic_ula_ridge_cg/tests -v
 
 if [[ "$RERUN_PILOT" == "1" ]]; then
-  OUTPUT_ROOT="$FIXED_ROOT/pilot" JOBS="$JOBS" PYTHON="$PYTHON" \
+  OUTPUT_ROOT="$OUTPUT_ROOT/pilot" JOBS="$JOBS" PYTHON="$PYTHON" \
     bash synthetic_ula_ridge_cg/scripts/reproduce_pilot.sh
 else
-  mkdir -p "$FIXED_ROOT/pilot"
+  mkdir -p "$OUTPUT_ROOT/pilot"
   cp synthetic_ula_ridge_cg/results/pilot/selected_config.json \
     "$SELECTED_CONFIG"
 fi
 
-run_tasks() {
-  local task_count="$1"
-  local config="$2"
-  local output_root="$3"
-  local task_id
-  local pid
-  local -a pids=()
+task_count="$(
+  "$PYTHON" - <<'PY'
+import json
+from pathlib import Path
 
-  for ((task_id = 0; task_id < task_count; task_id++)); do
-    "$PYTHON" -m synthetic_ula_ridge_cg.run_task \
-      --task-id "$task_id" \
-      --config "$config" \
-      --selected-config "$SELECTED_CONFIG" \
-      --output-root "$output_root" \
-      --overwrite &
-    pids+=("$!")
-    if (( ${#pids[@]} >= JOBS )); then
-      for pid in "${pids[@]}"; do
-        wait "$pid"
-      done
-      pids=()
-    fi
-  done
-  for pid in "${pids[@]}"; do
-    wait "$pid"
-  done
+config = json.loads(
+    Path("synthetic_ula_ridge_cg/config/default_config.json").read_text(
+        encoding="utf-8"
+    )
+)
+print(
+    len(config["experiment"]["k_values"])
+    * len(config["experiment"]["seeds"])
+)
+PY
+)"
+
+run_task() {
+  "$PYTHON" -m synthetic_ula_ridge_cg.run_task \
+    --task-id "$1" \
+    --config "$CONFIG" \
+    --selected-config "$SELECTED_CONFIG" \
+    --output-root "$OUTPUT_ROOT/main" \
+    --overwrite
 }
 
-run_tasks \
-  30 \
-  synthetic_ula_ridge_cg/config/default_config.json \
-  "$FIXED_ROOT/main"
-run_tasks \
-  10 \
-  synthetic_ula_ridge_cg/config/k10_config.json \
-  "$K10_ROOT/main"
+pids=()
+for ((task_id = 0; task_id < task_count; task_id++)); do
+  run_task "$task_id" &
+  pids+=("$!")
+  if (( ${#pids[@]} >= JOBS )); then
+    for pid in "${pids[@]}"; do
+      wait "$pid"
+    done
+    pids=()
+  fi
+done
+for pid in "${pids[@]}"; do
+  wait "$pid"
+done
 
 "$PYTHON" -m synthetic_ula_ridge_cg.run_mechanism_checks \
-  --config synthetic_ula_ridge_cg/config/default_config.json \
-  --output-directory "$FIXED_ROOT/mechanisms"
+  --config "$CONFIG" \
+  --selection-k-values 1 2 4 10 \
+  --output-directory "$OUTPUT_ROOT/mechanisms"
 
-"$PYTHON" -m synthetic_ula_ridge_cg.run_mechanism_checks \
-  --config synthetic_ula_ridge_cg/config/k10_config.json \
-  --selection-k-values 10 \
-  --selection-only \
-  --output-directory "$K10_ROOT/mechanisms"
-
-OUTPUT_BASE="$OUTPUT_BASE" PYTHON="$PYTHON" \
+OUTPUT_ROOT="$OUTPUT_ROOT" PYTHON="$PYTHON" \
   bash synthetic_ula_ridge_cg/scripts/aggregate.sh
 
-echo "[reproduce] complete: $OUTPUT_BASE/report/RESULTS.md"
+echo "[reproduce] complete: $OUTPUT_ROOT/report/RESULTS.md"
