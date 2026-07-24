@@ -1,0 +1,82 @@
+{
+  "provenance": {
+    "g_pbgd": {
+      "pilot_budget_seconds": 2.0,
+      "pilot_seeds": [
+        11,
+        28,
+        47
+      ],
+      "selected_index": 6,
+      "selection_metric": "hyperobjective_gap"
+    },
+    "hg_baseline": {
+      "pilot_budget_seconds": 2.0,
+      "pilot_seeds": [
+        11,
+        28,
+        47
+      ],
+      "selected_index": 3,
+      "selection_metric": "hyperobjective_gap"
+    },
+    "hg_ms": {
+      "pilot_budget_seconds": 2.0,
+      "pilot_seeds": [
+        11,
+        28,
+        47
+      ],
+      "selected_index": 2,
+      "selection_metric": "hyperobjective_gap"
+    },
+    "iaptt_gm": {
+      "pilot_budget_seconds": 2.0,
+      "pilot_seeds": [
+        11,
+        28,
+        47
+      ],
+      "selected_index": 7,
+      "selection_metric": "hyperobjective_gap"
+    },
+    "v_pbgd": {
+      "pilot_budget_seconds": 2.0,
+      "pilot_seeds": [
+        11,
+        28,
+        47
+      ],
+      "selected_index": 1,
+      "selection_metric": "hyperobjective_gap"
+    }
+  },
+  "schema_version": 2,
+  "selected_overrides": {
+    "g_pbgd": {
+      "lower_learning_rate": 0.03,
+      "penalty": 10.0,
+      "theta_learning_rate": 0.03
+    },
+    "hg_baseline": {
+      "ridge": 0.8,
+      "theta_learning_rate": 0.01,
+      "ula_step_size": 0.01
+    },
+    "hg_ms": {
+      "ridge": 0.3,
+      "theta_learning_rate": 0.01,
+      "ula_step_size": 0.01
+    },
+    "iaptt_gm": {
+      "initialization_learning_rate": 0.03,
+      "inner_learning_rate": 0.03,
+      "theta_learning_rate": 0.03
+    },
+    "v_pbgd": {
+      "lower_learning_rate": 0.01,
+      "penalty": 30.0,
+      "theta_learning_rate": 0.01
+    }
+  }
+}

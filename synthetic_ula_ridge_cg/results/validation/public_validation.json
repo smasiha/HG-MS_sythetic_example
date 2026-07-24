@@ -1,0 +1,47 @@
+{
+  "checks": {
+    "cg_breakdowns": 0,
+    "cg_tolerance_failures": 0,
+    "final_per_seed_rows": 200,
+    "final_summary_rows": 20,
+    "hg_ms_lowest_mean_cells": 12,
+    "paired_comparison_rows": 16,
+    "raw_end_to_end_files": 200,
+    "ridge_cg_rows": 120,
+    "runs_per_method_and_k": 10,
+    "selection_rows": 48,
+    "ula_gibbs_rows": 24,
+    "unacceptable_wall_clock_overruns": 0,
+    "unique_method_dimension_seed_cells": 200,
+    "wallclock_curve_rows": 7260
+  },
+  "complete": true,
+  "package_version": "1.0.0",
+  "selection_slopes": {
+    "1": {
+      "observed": -2.0161218457272274,
+      "quadrature": -1.9874743145609781,
+      "sharp_asymptotic": -2.0,
+      "theorem_envelope": -1.0
+    },
+    "10": {
+      "observed": -0.15763893498690565,
+      "quadrature": -0.15573973516666173,
+      "sharp_asymptotic": -0.2,
+      "theorem_envelope": -0.1
+    },
+    "2": {
+      "observed": -1.0155913723898014,
+      "quadrature": -1.0004692775446038,
+      "sharp_asymptotic": -1.0,
+      "theorem_envelope": -0.5
+    },
+    "4": {
+      "observed": -0.5990202319462433,
+      "quadrature": -0.5980645711331043,
+      "sharp_asymptotic": -0.5,
+      "theorem_envelope": -0.25
+    }
+  },
+  "warnings": []
+}

@@ -1,0 +1,32 @@
+name: Synthetic ULA and ridge-CG
+
+on:
+  pull_request:
+    paths:
+      - "synthetic_ula_ridge_cg/**"
+      - ".github/workflows/synthetic-ula-ridge-cg.yml"
+  push:
+    paths:
+      - "synthetic_ula_ridge_cg/**"
+      - ".github/workflows/synthetic-ula-ridge-cg.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: synthetic_ula_ridge_cg/requirements.txt
+      - name: Install dependencies
+        run: python -m pip install -r synthetic_ula_ridge_cg/requirements.txt
+      - name: Run unit tests
+        run: python -m unittest discover -s synthetic_ula_ridge_cg/tests -v
+      - name: Run CPU smoke test
+        run: bash synthetic_ula_ridge_cg/scripts/smoke_test.sh

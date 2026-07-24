@@ -1,0 +1,56 @@
+{
+  "schema_version": 2,
+  "pilot_seeds": [11, 28, 47],
+  "pilot_budget_seconds": 2.0,
+  "selection_metric": "hyperobjective_gap",
+  "hg_ms": [
+    {"theta_learning_rate": 0.01, "ula_step_size": 0.005, "ridge": 0.30},
+    {"theta_learning_rate": 0.01, "ula_step_size": 0.005, "ridge": 0.80},
+    {"theta_learning_rate": 0.01, "ula_step_size": 0.010, "ridge": 0.30},
+    {"theta_learning_rate": 0.01, "ula_step_size": 0.010, "ridge": 0.80},
+    {"theta_learning_rate": 0.03, "ula_step_size": 0.005, "ridge": 0.30},
+    {"theta_learning_rate": 0.03, "ula_step_size": 0.005, "ridge": 0.80},
+    {"theta_learning_rate": 0.03, "ula_step_size": 0.010, "ridge": 0.30},
+    {"theta_learning_rate": 0.03, "ula_step_size": 0.010, "ridge": 0.80}
+  ],
+  "hg_baseline": [
+    {"theta_learning_rate": 0.01, "ula_step_size": 0.005, "ridge": 0.30},
+    {"theta_learning_rate": 0.01, "ula_step_size": 0.005, "ridge": 0.80},
+    {"theta_learning_rate": 0.01, "ula_step_size": 0.010, "ridge": 0.30},
+    {"theta_learning_rate": 0.01, "ula_step_size": 0.010, "ridge": 0.80},
+    {"theta_learning_rate": 0.03, "ula_step_size": 0.005, "ridge": 0.30},
+    {"theta_learning_rate": 0.03, "ula_step_size": 0.005, "ridge": 0.80},
+    {"theta_learning_rate": 0.03, "ula_step_size": 0.010, "ridge": 0.30},
+    {"theta_learning_rate": 0.03, "ula_step_size": 0.010, "ridge": 0.80}
+  ],
+  "v_pbgd": [
+    {"theta_learning_rate": 0.01, "lower_learning_rate": 0.01, "penalty": 10.0},
+    {"theta_learning_rate": 0.01, "lower_learning_rate": 0.01, "penalty": 30.0},
+    {"theta_learning_rate": 0.01, "lower_learning_rate": 0.03, "penalty": 10.0},
+    {"theta_learning_rate": 0.01, "lower_learning_rate": 0.03, "penalty": 30.0},
+    {"theta_learning_rate": 0.03, "lower_learning_rate": 0.01, "penalty": 10.0},
+    {"theta_learning_rate": 0.03, "lower_learning_rate": 0.01, "penalty": 30.0},
+    {"theta_learning_rate": 0.03, "lower_learning_rate": 0.03, "penalty": 10.0},
+    {"theta_learning_rate": 0.03, "lower_learning_rate": 0.03, "penalty": 30.0}
+  ],
+  "g_pbgd": [
+    {"theta_learning_rate": 0.01, "lower_learning_rate": 0.01, "penalty": 10.0},
+    {"theta_learning_rate": 0.01, "lower_learning_rate": 0.01, "penalty": 30.0},
+    {"theta_learning_rate": 0.01, "lower_learning_rate": 0.03, "penalty": 10.0},
+    {"theta_learning_rate": 0.01, "lower_learning_rate": 0.03, "penalty": 30.0},
+    {"theta_learning_rate": 0.03, "lower_learning_rate": 0.01, "penalty": 10.0},
+    {"theta_learning_rate": 0.03, "lower_learning_rate": 0.01, "penalty": 30.0},
+    {"theta_learning_rate": 0.03, "lower_learning_rate": 0.03, "penalty": 10.0},
+    {"theta_learning_rate": 0.03, "lower_learning_rate": 0.03, "penalty": 30.0}
+  ],
+  "iaptt_gm": [
+    {"theta_learning_rate": 0.01, "initialization_learning_rate": 0.01, "inner_learning_rate": 0.01},
+    {"theta_learning_rate": 0.01, "initialization_learning_rate": 0.01, "inner_learning_rate": 0.03},
+    {"theta_learning_rate": 0.01, "initialization_learning_rate": 0.03, "inner_learning_rate": 0.01},
+    {"theta_learning_rate": 0.01, "initialization_learning_rate": 0.03, "inner_learning_rate": 0.03},
+    {"theta_learning_rate": 0.03, "initialization_learning_rate": 0.01, "inner_learning_rate": 0.01},
+    {"theta_learning_rate": 0.03, "initialization_learning_rate": 0.01, "inner_learning_rate": 0.03},
+    {"theta_learning_rate": 0.03, "initialization_learning_rate": 0.03, "inner_learning_rate": 0.01},
+    {"theta_learning_rate": 0.03, "initialization_learning_rate": 0.03, "inner_learning_rate": 0.03}
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "candidates": [
+    {
+      "candidate_index": 0,
+      "failed": false,
+      "geometric_mean_score": 0.04506623987311926,
+      "mean_log10_score": -1.3461486760199677,
+      "override": {
+        "lower_learning_rate": 0.01,
+        "penalty": 10.0,
+        "theta_learning_rate": 0.01
+      },
+      "values": [
+        0.09046874788577997,
+        0.02076782051520354,
+        0.048715197834354296
+      ]
+    },
+    {
+      "candidate_index": 1,
+      "failed": false,
+      "geometric_mean_score": 0.05271401603015826,
+      "mean_log10_score": -1.2780738956936681,
+      "override": {
+        "lower_learning_rate": 0.01,
+        "penalty": 30.0,
+        "theta_learning_rate": 0.01
+      },
+      "values": [
+        0.1181941675083964,
+        0.020350811057799678,
+        0.06089765151686111
+      ]
+    },
+    {
+      "candidate_index": 2,
+      "failed": false,
+      "geometric_mean_score": 0.20092368378629394,
+      "mean_log10_score": -0.6969688679731997,
+      "override": {
+        "lower_learning_rate": 0.03,
+        "penalty": 10.0,
+        "theta_learning_rate": 0.01
+      },
+      "values": [
+        4.317741683598372,
+        0.02076782298716706,
+        0.09045774690487685
+      ]
+    },
+    {
+      "candidate_index": 3,
+      "failed": false,
+      "geometric_mean_score": 0.2053895809577181,
+      "mean_log10_score": -0.687421591154216,
+      "override": {
+        "lower_learning_rate": 0.03,
+        "penalty": 30.0,
+        "theta_learning_rate": 0.01
+      },
+      "values": [
+        4.317741683598372,
+        0.021486221089878743,
+        0.09339390400538994
+      ]
+    },
+    {
+      "candidate_index": 4,
+      "failed": false,
+      "geometric_mean_score": 0.05538973647143858,
+      "mean_log10_score": -1.256570701097626,
+      "override": {
+        "lower_learning_rate": 0.01,
+        "penalty": 10.0,
+        "theta_learning_rate": 0.03
+      },
+      "values": [
+        0.09045878815220787,
+        0.020767822986930362,
+        0.09045782847867612
+      ]
+    },
+    {
+      "candidate_index": 5,
+      "failed": false,
+      "geometric_mean_score": 0.058478654836012126,
+      "mean_log10_score": -1.2330026258589541,
+      "override": {
+        "lower_learning_rate": 0.01,
+        "penalty": 30.0,
+        "theta_learning_rate": 0.03
+      },
+      "values": [
+        0.09964708284522983,
+        0.021446537139899302,
+        0.09357726636849018
+      ]
+    },
+    {
+      "candidate_index": 6,
+      "failed": false,
+      "geometric_mean_score": 0.027755711473122006,
+      "mean_log10_score": -1.5566476357473373,
+      "override": {
+        "lower_learning_rate": 0.03,
+        "penalty": 10.0,
+        "theta_learning_rate": 0.03
+      },
+      "values": [
+        0.048715140370289234,
+        0.004852296921662891,
+        0.09045774687571351
+      ]
+    },
+    {
+      "candidate_index": 7,
+      "failed": false,
+      "geometric_mean_score": 0.02870192009677998,
+      "mean_log10_score": -1.5420890489265302,
+      "override": {
+        "lower_learning_rate": 0.03,
+        "penalty": 30.0,
+        "theta_learning_rate": 0.03
+      },
+      "values": [
+        0.05036831208779846,
+        0.005031829340534699,
+        0.09329310611220087
+      ]
+    }
+  ],
+  "k": 1,
+  "method": "g_pbgd",
+  "method_label": "G-PBGD",
+  "pilot_budget_seconds": 2.0,
+  "pilot_seeds": [
+    11,
+    28,
+    47
+  ],
+  "schema_version": 2,
+  "selected_index": 6,
+  "selected_override": {
+    "lower_learning_rate": 0.03,
+    "penalty": 10.0,
+    "theta_learning_rate": 0.03
+  },
+  "selection_metric": "hyperobjective_gap"
+}

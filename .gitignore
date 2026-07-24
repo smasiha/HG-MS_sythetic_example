@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.out
+*.err
+*.log
+.DS_Store
+
+synthetic_ula_ridge_cg/outputs/

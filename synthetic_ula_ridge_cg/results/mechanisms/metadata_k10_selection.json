@@ -1,0 +1,21 @@
+{
+  "important_interpretation": "For the smooth sphere objective, the sharp squared selection error is N^(-2/k). The paper's N^(-1/k) term is a conservative upper envelope, not an equality prediction.",
+  "problem_config": {
+    "ambient_dimension": 20,
+    "epsilon": 0.1,
+    "kappa": 1.0,
+    "landscape_amplitude": 0.5,
+    "landscape_coupling": 0.3,
+    "landscape_oscillations": 4,
+    "normal_curvature": 1.0,
+    "theta_bound": 3.0
+  },
+  "quick": false,
+  "schema_version": 2,
+  "seed": 202603,
+  "selection_k_values": [
+    10
+  ],
+  "selection_only": true,
+  "selection_rows": 12
+}
