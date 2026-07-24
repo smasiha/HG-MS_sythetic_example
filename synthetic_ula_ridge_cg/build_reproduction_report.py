@@ -6,7 +6,6 @@ from pathlib import Path
 
 from .analyze_mechanisms import build_summary
 from .configuration import PACKAGE_ROOT
-from .latex_report import write_latex_tables
 from .public_artifact import (
     FINAL_SEEDS,
     K_VALUES,
@@ -84,13 +83,6 @@ def main() -> None:
     write_csv(mechanisms / "selection_error.csv", selection)
     write_csv(mechanisms / "ridge_cg_error.csv", ridge)
     write_csv(mechanisms / "ula_gibbs_error.csv", ula)
-    write_latex_tables(
-        output_directory / "latex",
-        final,
-        selection,
-        ridge,
-        ula,
-    )
     (output_directory / "RESULTS.md").write_text(
         render_results_markdown(final, paired, selection, ridge, ula),
         encoding="utf-8",
@@ -112,7 +104,7 @@ def main() -> None:
             "selection_rows": len(selection),
             "ridge_cg_rows": len(ridge),
             "ula_gibbs_rows": len(ula),
-            "latex_tables": 3,
+            "markdown_result_reports": 1,
         },
     )
     print(

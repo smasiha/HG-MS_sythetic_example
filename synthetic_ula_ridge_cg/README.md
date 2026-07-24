@@ -11,12 +11,13 @@ non-singleton lower solution set. It directly tests:
 
 The committed artifact contains all 100 end-to-end run records
 (4 manifold dimensions × 5 seeds × 5 methods), complete trajectories, oracle
-counts, mechanism diagnostics, generated CSV and LaTeX tables, and checksums.
+counts, mechanism diagnostics, generated CSV and Markdown tables, and
+checksums.
 The most convenient reviewer-facing entry points are:
 
-- [`EXPERIMENT_REPORT.tex`](EXPERIMENT_REPORT.tex): standalone formulations,
+- [`EXPERIMENT_REPORT.md`](EXPERIMENT_REPORT.md): standalone formulations,
   protocol, generated tables, and interpretation;
-- [`OPTIMISTIC_HESSIAN_PROOF.tex`](OPTIMISTIC_HESSIAN_PROOF.tex): explicit
+- [`OPTIMISTIC_HESSIAN_PROOF.md`](OPTIMISTIC_HESSIAN_PROOF.md): explicit
   geodesic proof of the optimistic point's intrinsic Hessian bound;
 - [`RESULTS.md`](RESULTS.md): compact generated results;
 - [`ALGORITHM_AUDIT.md`](ALGORITHM_AUDIT.md): each mathematical update mapped
@@ -82,7 +83,7 @@ non-degenerate because, in any orthonormal tangent basis,
 \succeq0.01I_k.
 \]
 The complete geodesic calculation is in
-[`OPTIMISTIC_HESSIAN_PROOF.tex`](OPTIMISTIC_HESSIAN_PROOF.tex). The exact
+[`OPTIMISTIC_HESSIAN_PROOF.md`](OPTIMISTIC_HESSIAN_PROOF.md). The exact
 hyper-objective, hyper-gradient, optimizer, and optimum are
 
 \[
@@ -221,7 +222,7 @@ physical CPU cores. To rerun the disjoint pilot first, set `RERUN_PILOT=1`.
 bash synthetic_ula_ridge_cg/scripts/aggregate.sh
 ```
 
-This writes Markdown, CSV, and LaTeX tables under
+This writes Markdown and CSV tables under
 `synthetic_ula_ridge_cg/outputs/reproduction/report/`.
 
 ### Deterministic public export
@@ -245,15 +246,15 @@ Validate the committed public artifact independently:
 python -m synthetic_ula_ridge_cg.validate_public_results
 ```
 
-### Compile the reviewer-facing LaTeX
+### Reviewer-facing Markdown
 
-From `synthetic_ula_ridge_cg/`:
+The website-renderable report, proof, and generated results are:
 
-```bash
-pdflatex -interaction=nonstopmode -halt-on-error EXPERIMENT_REPORT.tex
-```
+- [`EXPERIMENT_REPORT.md`](EXPERIMENT_REPORT.md);
+- [`OPTIMISTIC_HESSIAN_PROOF.md`](OPTIMISTIC_HESSIAN_PROOF.md);
+- [`RESULTS.md`](RESULTS.md).
 
-The three table files under `results/latex/` are generated from the source
+The numerical tables in `RESULTS.md` are generated directly from the source
 CSVs; they are not hand-copied.
 
 ## Runtime and Layout
@@ -264,15 +265,14 @@ plus mechanism checks and Python overhead. Memory use is below 1 GB.
 
 ```text
 synthetic_ula_ridge_cg/
-├── EXPERIMENT_REPORT.tex   # standalone reviewer-facing report
-├── OPTIMISTIC_HESSIAN_PROOF.tex
+├── EXPERIMENT_REPORT.md    # standalone reviewer-facing report
+├── OPTIMISTIC_HESSIAN_PROOF.md
 │                             # reusable intrinsic-Hessian proof
 ├── config/                 # final 60-second and pilot configurations
 ├── results/
 │   ├── raw/                # 100 sanitized lossless records + trajectories
 │   ├── pilot/              # frozen selection and pilot summaries
 │   ├── tables/             # per-seed, summary, paired, and timing CSVs
-│   ├── latex/              # generated publication-ready tables
 │   ├── mechanisms/         # selection, ridge-CG, and ULA/Gibbs diagnostics
 │   ├── validation/         # source and public validation reports
 │   └── MANIFEST.json       # versions, counts, and SHA-256 checksums
@@ -281,8 +281,8 @@ synthetic_ula_ridge_cg/
 └── tests/                  # unit and integration tests
 ```
 
-Generated working outputs, caches, Slurm logs, plots, and PDFs are excluded
-from version control.
+Generated working outputs, caches, Slurm logs, and plots are excluded from
+version control.
 
 ## Limitations
 

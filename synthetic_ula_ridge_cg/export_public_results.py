@@ -8,7 +8,6 @@ from typing import Any, Dict
 
 from .analyze_mechanisms import build_summary
 from .configuration import PACKAGE_ROOT, read_json
-from .latex_report import write_latex_tables
 from .public_artifact import (
     K_VALUES,
     METHODS,
@@ -197,14 +196,6 @@ def export_results(
         output_directory / "tables" / "wallclock_curves.csv",
         curves,
     )
-    write_latex_tables(
-        output_directory / "latex",
-        final,
-        selection,
-        ridge,
-        ula,
-    )
-
     (output_directory / "RESULTS.md").write_text(
         render_results_markdown(final, paired, selection, ridge, ula),
         encoding="utf-8",

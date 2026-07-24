@@ -7,10 +7,10 @@ best-of-\(N\) selection, and a ridge-CG pseudoinverse approximation. The final
 comparison gives all five methods 60 single-thread CPU seconds for each of
 five held-out seeds and \(k\in\{1,2,4,10\}\).
 
-- Standalone formulations and LaTeX tables:
-  [`synthetic_ula_ridge_cg/EXPERIMENT_REPORT.tex`](synthetic_ula_ridge_cg/EXPERIMENT_REPORT.tex)
+- Standalone formulations and result tables:
+  [`synthetic_ula_ridge_cg/EXPERIMENT_REPORT.md`](synthetic_ula_ridge_cg/EXPERIMENT_REPORT.md)
 - Intrinsic-Hessian proof:
-  [`synthetic_ula_ridge_cg/OPTIMISTIC_HESSIAN_PROOF.tex`](synthetic_ula_ridge_cg/OPTIMISTIC_HESSIAN_PROOF.tex)
+  [`synthetic_ula_ridge_cg/OPTIMISTIC_HESSIAN_PROOF.md`](synthetic_ula_ridge_cg/OPTIMISTIC_HESSIAN_PROOF.md)
 - Complete setup and reproduction guide:
   [`synthetic_ula_ridge_cg/README.md`](synthetic_ula_ridge_cg/README.md)
 - Generated tables and interpretation:

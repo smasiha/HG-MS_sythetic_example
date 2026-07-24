@@ -40,7 +40,7 @@ Thus \(\theta^\star=0\), \(F^\star=2\sqrt{1.01}\), and, under the
 ambient-induced metric, the tangent Riemannian Hessian at
 \(x^\star(\theta)\) has eigenvalue
 \((1+0.3\theta)/(1+\theta^2)\ge0.01\). The geodesic proof is in
-`OPTIMISTIC_HESSIAN_PROOF.tex`. In the lower Hessian there are exactly \(k\)
+`OPTIMISTIC_HESSIAN_PROOF.md`. In the lower Hessian there are exactly \(k\)
 tangent zero modes, one positive radial mode, and \(d-k-1\) positive
 embedding-normal modes.
 

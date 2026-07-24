@@ -774,29 +774,18 @@ def validate_public_results(
         if round(slopes["quadrature"], 3) != expected_quadrature[k]:
             raise AssertionError(f"quadrature slope mismatch for k={k}")
 
-    from .latex_report import (
-        render_end_to_end_table,
-        render_mechanism_table,
-        render_selection_table,
+    reviewer_markdown = (
+        package_root / "EXPERIMENT_REPORT.md",
+        package_root / "OPTIMISTIC_HESSIAN_PROOF.md",
     )
-
-    expected_latex = {
-        "end_to_end_table.tex": render_end_to_end_table(final),
-        "selection_scaling_table.tex": render_selection_table(selection),
-        "mechanism_diagnostics_table.tex": render_mechanism_table(
-            selection,
-            ridge,
-            ula,
-        ),
-    }
-    for filename, expected_text in expected_latex.items():
-        actual_text = (
-            results_directory / "latex" / filename
-        ).read_text(encoding="utf-8")
-        if actual_text != expected_text:
-            raise AssertionError(f"generated LaTeX is stale: {filename}")
-    if not (package_root / "EXPERIMENT_REPORT.tex").is_file():
-        raise AssertionError("missing reviewer-facing LaTeX report")
+    missing_markdown = [
+        path.name for path in reviewer_markdown if not path.is_file()
+    ]
+    if missing_markdown:
+        raise AssertionError(
+            "missing reviewer-facing Markdown: "
+            + ", ".join(missing_markdown)
+        )
 
     final_index = {
         (int(row["k"]), row["method"]): row for row in final
@@ -895,7 +884,7 @@ def validate_public_results(
             "selection_rows": len(selection),
             "ridge_cg_rows": len(ridge),
             "ula_gibbs_rows": len(ula),
-            "generated_latex_tables": len(expected_latex),
+            "reviewer_markdown_files": len(reviewer_markdown),
             "hg_ms_lowest_mean_cells": lowest_cells,
         },
         "selection_slopes": {
